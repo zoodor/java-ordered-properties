@@ -13,6 +13,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.Writer;
+import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Enumeration;
@@ -366,6 +367,15 @@ public final class OrderedProperties implements Serializable {
             return new LinkedHashSet<Object>(targetProperties.keySet());
         }
 
+        @Override
+        public Set<Map.Entry<Object, Object>> entrySet() {
+            Set<Map.Entry<String, String>> entrySet = targetProperties.entrySet();
+            Set<Map.Entry<Object, Object>> result = new LinkedHashSet<>(entrySet.size());
+            for (Map.Entry<String, String> entry : entrySet) {
+                result.add(new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue()));
+            }
+            return result;
+        }
     }
 
     /**

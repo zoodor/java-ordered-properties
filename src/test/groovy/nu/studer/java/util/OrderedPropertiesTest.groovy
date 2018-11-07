@@ -1,6 +1,11 @@
 package nu.studer.java.util
 
+import org.w3c.dom.Document
 import spock.lang.Specification
+
+import javax.xml.parsers.DocumentBuilder
+import javax.xml.parsers.DocumentBuilderFactory
+import java.nio.charset.Charset
 
 import static nu.studer.java.util.OrderedProperties.OrderedPropertiesBuilder
 
@@ -89,8 +94,7 @@ class OrderedPropertiesTest extends Specification {
 
   def "properties remain ordered when loading from stream"() {
     setup:
-    def stream = asStream """\
-b=222
+    def stream = asStream """b=222
 c=333
 a=111
 d=
@@ -110,8 +114,7 @@ d=
 
   def "properties remain ordered when loading from reader"() {
     setup:
-    def reader = asReader """\
-b=222
+    def reader = asReader """b=222
 c=333
 a=111
 d=
@@ -131,8 +134,7 @@ d=
 
   def "properties remain ordered when loading from stream as xml"() {
     setup:
-    def stream = asStream """\
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+    def stream = asStream """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
   <entry key="b">222</entry>
@@ -166,8 +168,7 @@ d=
     props.store(stream, null)
 
     then:
-    stream.toString() endsWith """
-b=222
+    stream.toString() endsWith """b=222
 c=333
 a=111
 d=
@@ -186,8 +187,7 @@ d=
     props.store(writer, null)
 
     then:
-    writer.toString() endsWith """
-b=222
+    writer.toString() endsWith """b=222
 c=333
 a=111
 d=
@@ -206,8 +206,9 @@ d=
     props.storeToXML(stream, "foo")
 
     then:
-    stream.toString() == """\
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+    assert areEquivalent(
+            stream.toString(),
+            """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
 <comment>foo</comment>
@@ -216,7 +217,7 @@ d=
 <entry key="a">111</entry>
 <entry key="d"/>
 </properties>
-"""
+""")
   }
 
   def "properties remain ordered when writing to stream as xml with custom encoding"() {
@@ -231,8 +232,9 @@ d=
     props.storeToXML(stream, "foo", "ISO-8859-1")
 
     then:
-    stream.toString() == """\
-<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+    assert areEquivalent(
+            stream.toString(),
+            """<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
 <comment>foo</comment>
@@ -241,7 +243,7 @@ d=
 <entry key="a">111</entry>
 <entry key="d"/>
 </properties>
-"""
+""")
   }
 
   def "properties remain ordered when serializing"() {
@@ -306,8 +308,7 @@ d=
     this.props.store(stream, null)
 
     then:
-    stream.toString() endsWith """
-a=111
+    stream.toString() endsWith """a=111
 b=222
 c=333
 """
@@ -325,8 +326,7 @@ c=333
     props.store(stream, null)
 
     then:
-    stream.toString() == """\
-b=222
+    stream.toString() == """b=222
 c=333
 a=111
 """
@@ -356,8 +356,7 @@ a=111
     props.store(stream, "some comment")
 
     then:
-    stream.toString() == """\
-#some comment
+    stream.toString() == """#some comment
 b=222
 c=333
 a=111
@@ -373,8 +372,7 @@ a=111
     props.store(stream, "some comment")
 
     then:
-    stream.toString() == """\
-#some comment
+    stream.toString() == """#some comment
 """
   }
 
@@ -390,8 +388,7 @@ a=111
     props.store(stream, "this is a very long comment that needs to be added when storing the properties to a stream")
 
     then:
-    stream.toString() == """\
-#this is a very long comment that needs to be added when storing the properties to a stream
+    stream.toString() == """#this is a very long comment that needs to be added when storing the properties to a stream
 b=222
 c=333
 a=111
@@ -410,8 +407,7 @@ a=111
     props.store(stream, "this is some very long comment that spans multiple lines and\nneeds to be added when storing the properties to a stream")
 
     then:
-    stream.toString() == """\
-#this is some very long comment that spans multiple lines and
+    stream.toString() == """#this is some very long comment that spans multiple lines and
 #needs to be added when storing the properties to a stream
 b=222
 c=333
@@ -506,4 +502,20 @@ a=111
     new ByteArrayInputStream(text.getBytes("ISO-8859-1"))
   }
 
+  private static boolean areEquivalent(String xmlString1, String xmlString2) {
+    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance()
+    dbf.setNamespaceAware(true)
+    dbf.setCoalescing(true)
+    dbf.setIgnoringElementContentWhitespace(true)
+    dbf.setIgnoringComments(true)
+    DocumentBuilder db = dbf.newDocumentBuilder()
+
+    Document doc1 = db.parse(new ByteArrayInputStream(xmlString1.getBytes(Charset.forName("UTF-8"))))
+    doc1.normalizeDocument()
+
+    Document doc2 = db.parse(new ByteArrayInputStream(xmlString2.getBytes(Charset.forName("UTF-8"))))
+    doc2.normalizeDocument()
+
+    return doc1.isEqualNode(doc2)
+  }
 }
