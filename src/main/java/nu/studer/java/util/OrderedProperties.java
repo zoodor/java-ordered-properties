@@ -26,28 +26,36 @@ import java.util.TreeMap;
 import java.util.Vector;
 
 /**
+ * <p>
  * This class provides an alternative to the JDK's {@link Properties} class. It fixes the design flaw of using
  * inheritance over composition, while keeping up the same APIs as the original class. Keys and values are
  * guaranteed to be of type {@link String}.
- * <p/>
+ * </p>
+ * <p>
  * This class is not synchronized, contrary to the original implementation.
- * <p/>
+ * </p>
+ * <p>
  * As additional functionality, this class keeps its properties in a well-defined order. By default, the order
  * is the one in which the individual properties have been added, either through explicit API calls or through
  * reading them top-to-bottom from a properties file.
- * <p/>
+ * </p>
+ * <p>
  * Also, an optional flag can be set to omit the comment that contains the current date when storing the
  * properties to a properties file.
- * <p/>
+ * </p>
+ * <p>
  * Currently, this class does not support the concept of default properties, contrary to the original implementation.
- * <p/>
+ * </p>
+ * <p>
  * <strong>Note that this implementation is not synchronized.</strong> If multiple threads access ordered
  * properties concurrently, and at least one of the threads modifies the ordered properties structurally, it
  * <em>must</em> be synchronized externally. This is typically accomplished by synchronizing on some object
  * that naturally encapsulates the properties.
- * <p/>
+ * </p>
+ * <p>
  * Note that the actual (and quite complex) logic of parsing and storing properties from and to a stream
  * is delegated to the {@link Properties} class from the JDK.
+ * </p>
  *
  * @see Properties
  */
@@ -73,111 +81,85 @@ public final class OrderedProperties implements Serializable {
     }
 
     /**
-     * See {@link Properties#getProperty(String)}.
+     * Searches for the property with the specified key in this property list.
+     * If the key is not found in this property list. The method returns
+     * {@code null} if the property is not found.
+     *
+     * @param   key   the property key.
+     * @return  the value in this property list with the specified key value.
+     * @see     #setProperty
      */
     public String getProperty(String key) {
         return properties.get(key);
     }
 
-    /**
-     * See {@link Properties#getProperty(String, String)}.
-     */
     public String getProperty(String key, String defaultValue) {
         String value = properties.get(key);
         return (value == null) ? defaultValue : value;
     }
 
-    /**
-     * See {@link Properties#setProperty(String, String)}.
-     */
     public String setProperty(String key, String value) {
         return properties.put(key, value);
     }
 
     /**
      * Removes the property with the specified key, if it is present. Returns
-     * the value of the property, or <tt>null</tt> if there was no property with
+     * the value of the property, or <code>null</code> if there was no property with
      * the specified key.
      *
      * @param key the key of the property to remove
-     * @return the previous value of the property, or <tt>null</tt> if there was no property with the specified key
+     * @return the previous value of the property, or <code>null</code> if there was no property with the specified key
      */
     public String removeProperty(String key) {
         return properties.remove(key);
     }
 
     /**
-     * Returns <tt>true</tt> if there is a property with the specified key.
+     * Returns <code>true</code> if there is a property with the specified key.
      *
      * @param key the key whose presence is to be tested
+     * @return <code>true</code> if there is a property with the specified key; otherwise, <code>false</code>
      */
     public boolean containsProperty(String key) {
         return properties.containsKey(key);
     }
 
-    /**
-     * See {@link Properties#size()}.
-     */
     public int size() {
         return properties.size();
     }
 
-    /**
-     * See {@link Properties#isEmpty()}.
-     */
     public boolean isEmpty() {
         return properties.isEmpty();
     }
 
-    /**
-     * See {@link Properties#propertyNames()}.
-     */
     public Enumeration<String> propertyNames() {
         return new Vector<String>(properties.keySet()).elements();
     }
 
-    /**
-     * See {@link Properties#stringPropertyNames()}.
-     */
     public Set<String> stringPropertyNames() {
         return new LinkedHashSet<String>(properties.keySet());
     }
 
-    /**
-     * See {@link Properties#entrySet()}.
-     */
     public Set<Map.Entry<String, String>> entrySet() {
         return new LinkedHashSet<Map.Entry<String, String>>(properties.entrySet());
     }
 
-    /**
-     * See {@link Properties#load(InputStream)}.
-     */
     public void load(InputStream stream) throws IOException {
         CustomProperties customProperties = new CustomProperties(this.properties);
         customProperties.load(stream);
     }
 
-    /**
-     * See {@link Properties#load(Reader)}.
-     */
     public void load(Reader reader) throws IOException {
         CustomProperties customProperties = new CustomProperties(this.properties);
         customProperties.load(reader);
     }
 
-    /**
-     * See {@link Properties#loadFromXML(InputStream)}.
-     */
     @SuppressWarnings("DuplicateThrows")
     public void loadFromXML(InputStream stream) throws IOException, InvalidPropertiesFormatException {
         CustomProperties customProperties = new CustomProperties(this.properties);
         customProperties.loadFromXML(stream);
     }
 
-    /**
-     * See {@link Properties#store(OutputStream, String)}.
-     */
     public void store(OutputStream stream, String comments) throws IOException {
         CustomProperties customProperties = new CustomProperties(this.properties);
         if (suppressDate) {
@@ -187,9 +169,6 @@ public final class OrderedProperties implements Serializable {
         }
     }
 
-    /**
-     * See {@link Properties#store(Writer, String)}.
-     */
     public void store(Writer writer, String comments) throws IOException {
         CustomProperties customProperties = new CustomProperties(this.properties);
         if (suppressDate) {
@@ -199,33 +178,21 @@ public final class OrderedProperties implements Serializable {
         }
     }
 
-    /**
-     * See {@link Properties#storeToXML(OutputStream, String)}.
-     */
     public void storeToXML(OutputStream stream, String comment) throws IOException {
         CustomProperties customProperties = new CustomProperties(this.properties);
         customProperties.storeToXML(stream, comment);
     }
 
-    /**
-     * See {@link Properties#storeToXML(OutputStream, String, String)}.
-     */
     public void storeToXML(OutputStream stream, String comment, String encoding) throws IOException {
         CustomProperties customProperties = new CustomProperties(this.properties);
         customProperties.storeToXML(stream, comment, encoding);
     }
 
-    /**
-     * See {@link Properties#list(PrintStream)}.
-     */
     public void list(PrintStream stream) {
         CustomProperties customProperties = new CustomProperties(this.properties);
         customProperties.list(stream);
     }
 
-    /**
-     * See {@link Properties#list(PrintWriter)}.
-     */
     public void list(PrintWriter writer) {
         CustomProperties customProperties = new CustomProperties(this.properties);
         customProperties.list(writer);
@@ -289,11 +256,14 @@ public final class OrderedProperties implements Serializable {
     }
 
     /**
+     * <p>
      * Creates a new instance that will have both the same property entries and
      * the same behavior as the given source.
-     * <p/>
+     * </p>
+     * <p>
      * Note that the source instance and the copy instance will share the same
      * comparator instance if a custom ordering had been configured on the source.
+     * </p>
      *
      * @param source the source to copy from
      * @return the copy
